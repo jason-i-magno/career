@@ -1,0 +1,15 @@
+# Build artefacts
+/bin/
+coverage.out
+
+# Local databases: career data is personal, and the schema is rebuilt by
+# migrations on first run.
+*.db
+*.db-shm
+*.db-wal
+
+# Editor and OS noise
+.idea/
+.vscode/
+*.swp
+.DS_Store
