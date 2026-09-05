@@ -1,0 +1,20 @@
+version: 2
+
+updates:
+  # Keep the workflow's actions current. Actions deprecate their Node runtime
+  # on a rolling basis, and the warning only appears in run logs — easy to miss
+  # for months until the compatibility shim is withdrawn and CI breaks.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    # One PR for all actions rather than one per action: these move together
+    # and each bump needs the same check, that CI still passes.
+    groups:
+      actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: ci
+    labels:
+      - dependencies
