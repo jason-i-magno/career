@@ -1,8 +1,9 @@
 package model
 
 import (
+	"cmp"
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 )
@@ -122,6 +123,6 @@ func SortCompetencies(cs []Competency) []Competency {
 		idx[c] = i
 	}
 	out := append([]Competency(nil), cs...)
-	sort.SliceStable(out, func(i, j int) bool { return idx[out[i]] < idx[out[j]] })
+	slices.SortStableFunc(out, func(a, b Competency) int { return cmp.Compare(idx[a], idx[b]) })
 	return out
 }
