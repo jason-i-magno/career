@@ -1,9 +1,10 @@
 package cli
 
 import (
+	"cmp"
 	"context"
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 
@@ -35,8 +36,8 @@ func runToday(ctx context.Context, env *Env, args []string) error {
 			stale = append(stale, a)
 		}
 	}
-	sort.SliceStable(due, func(i, j int) bool {
-		return due[i].NextActionAt.Before(*due[j].NextActionAt)
+	slices.SortStableFunc(due, func(a, b model.Application) int {
+		return a.NextActionAt.Compare(*b.NextActionAt)
 	})
 
 	fmt.Fprintf(env.Out, "\n%s  %s\n", bold("career"), dim(now.Format("Mon 2 Jan 2006")))
@@ -187,7 +188,7 @@ func renderBreakdown(w interface{ Write([]byte) (int, error) }, apps []model.App
 			g.rejected++
 		}
 	}
-	sort.Slice(order, func(i, j int) bool { return groups[order[i]].total > groups[order[j]].total })
+	slices.SortStableFunc(order, func(a, b string) int { return cmp.Compare(groups[b].total, groups[a].total) })
 
 	tw := newTable(w)
 	fmt.Fprintf(tw, "  %s\t%s\t%s\t%s\n", dim("KEY"), dim("TOTAL"), dim("ADVANCED"), dim("REJECTED"))

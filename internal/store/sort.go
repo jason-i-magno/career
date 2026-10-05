@@ -1,7 +1,8 @@
 package store
 
 import (
-	"sort"
+	"cmp"
+	"slices"
 
 	"github.com/jason-i-magno/career/internal/model"
 )
@@ -9,7 +10,7 @@ import (
 // stableSortByStage orders applications by pipeline progress, preserving the
 // caller's secondary ordering (most recently updated) within each stage.
 func stableSortByStage(as []model.Application) {
-	sort.SliceStable(as, func(i, j int) bool {
-		return as[i].Stage.Order() < as[j].Stage.Order()
+	slices.SortStableFunc(as, func(a, b model.Application) int {
+		return cmp.Compare(a.Stage.Order(), b.Stage.Order())
 	})
 }

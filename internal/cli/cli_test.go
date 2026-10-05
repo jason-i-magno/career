@@ -2,6 +2,7 @@ package cli
 
 import (
 	"flag"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -289,6 +290,52 @@ func TestPlural(t *testing.T) {
 		if got := plural(n, "lead", "leads"); got != "leads" {
 			t.Errorf("plural(%d) = %q, want leads", n, got)
 		}
+	}
+}
+
+func TestBreakdownOrdersByTotalAndKeepsTiesInFirstSeenOrder(t *testing.T) {
+	// Twenty keys, every third appearing twice. Past twelve elements sort.Slice
+	// stops insertion-sorting, so this is the case that catches an unstable sort.
+	var many, manyWant, manyOnes []string
+	for i := range 20 {
+		k := fmt.Sprintf("k%02d", i)
+		many = append(many, k)
+		if i%3 == 0 {
+			many = append(many, k)
+			manyWant = append(manyWant, k)
+		} else {
+			manyOnes = append(manyOnes, k)
+		}
+	}
+	manyWant = append(manyWant, manyOnes...)
+
+	tests := []struct {
+		name string
+		keys []string // one application per element, grouped by value
+		want []string
+	}{
+		{"larger totals first", []string{"a", "b", "b", "c", "c", "c"}, []string{"c", "b", "a"}},
+		{"ties keep first-seen order", []string{"a", "b", "c", "b", "d", "d"}, []string{"b", "d", "a", "c"}},
+		{"ties keep first-seen order past twelve groups", many, manyWant},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			apps := make([]model.Application, len(tc.keys))
+			for i, k := range tc.keys {
+				apps[i] = model.Application{Company: k}
+			}
+			var out strings.Builder
+			renderBreakdown(&out, apps, func(a model.Application) string { return a.Company })
+
+			// Skip the header; the key is the first column and is never styled.
+			var got []string
+			for _, line := range strings.Split(strings.TrimRight(out.String(), "\n"), "\n")[1:] {
+				got = append(got, strings.Fields(line)[0])
+			}
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("got %v, want %v", got, tc.want)
+			}
+		})
 	}
 }
 
