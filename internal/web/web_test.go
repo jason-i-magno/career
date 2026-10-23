@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 	"time"
-	_ "time/tzdata" // the DST case needs America/Denver on any machine
+	_ "time/tzdata" // the DST case needs America/New_York on any machine
 
 	"github.com/jason-i-magno/career/internal/model"
 	"github.com/jason-i-magno/career/internal/prep"
@@ -276,14 +276,14 @@ func TestUnsanitizedStoryTextIsWithheld(t *testing.T) {
 func TestApplicationDetailShowsHistory(t *testing.T) {
 	st, h := newTestServer(t)
 	id := addApplication(t, st, model.Application{Company: "Acme", Stage: model.StageTech,
-		Location: "Denver", Remote: true, BaseComp: 195000}, testNow)
+		Location: "Springfield", Remote: true, BaseComp: 120000}, testNow)
 	if _, err := st.AddEvent(context.Background(), model.Event{ApplicationID: id, At: testNow,
 		Kind: model.EventNote, Body: "Recruiter said the team is hiring two."}); err != nil {
 		t.Fatalf("AddEvent: %v", err)
 	}
 
 	assertContains(t, do(t, h, "GET", fmt.Sprintf("/apps/%d", id), nil).Body.String(),
-		"Denver (remote)", "$195,000", "Recruiter said the team is hiring two.")
+		"Springfield (remote)", "$120,000", "Recruiter said the team is hiring two.")
 }
 
 func TestBadAndMissingRequests(t *testing.T) {
@@ -334,7 +334,7 @@ func TestRelDaysCountsLocalCalendarDays(t *testing.T) {
 	// 7 pm six hours behind UTC is already the next day in UTC: the case that
 	// breaks a count taken in UTC.
 	evening := time.Date(2026, time.October, 23, 19, 0, 0, 0, testZone)
-	denver, err := time.LoadLocation("America/Denver")
+	eastern, err := time.LoadLocation("America/New_York")
 	if err != nil {
 		t.Fatalf("LoadLocation: %v", err)
 	}
@@ -351,8 +351,8 @@ func TestRelDaysCountsLocalCalendarDays(t *testing.T) {
 		{"a week out", time.Date(2026, time.October, 30, 0, 0, 0, 0, testZone), evening, "in 7d"},
 		{"days ago", time.Date(2026, time.October, 18, 0, 0, 0, 0, testZone), evening, "5d ago"},
 		// The day the clocks go forward is 23 hours long.
-		{"across spring-forward", time.Date(2026, time.March, 7, 12, 0, 0, 0, denver),
-			time.Date(2026, time.March, 8, 12, 0, 0, 0, denver), "yesterday"},
+		{"across spring-forward", time.Date(2026, time.March, 7, 12, 0, 0, 0, eastern),
+			time.Date(2026, time.March, 8, 12, 0, 0, 0, eastern), "yesterday"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
