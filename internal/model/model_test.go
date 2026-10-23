@@ -194,3 +194,34 @@ func TestPrepItemWantsAnswer(t *testing.T) {
 		})
 	}
 }
+
+func TestTriageSeparatesDueFromQuiet(t *testing.T) {
+	now := time.Date(2026, time.September, 15, 10, 0, 0, 0, time.UTC)
+	at := func(days int) *time.Time {
+		t := now.AddDate(0, 0, days)
+		return &t
+	}
+	month := now.AddDate(0, 0, -30)
+	apps := []Application{
+		{ID: 1, Stage: StageApplied, UpdatedAt: now, NextActionAt: at(-1)},
+		{ID: 2, Stage: StageScreen, UpdatedAt: month, NextActionAt: at(-3)}, // due and quiet: due wins
+		{ID: 3, Stage: StageApplied, UpdatedAt: month},
+		{ID: 4, Stage: StageApplied, UpdatedAt: now, NextActionAt: at(2)},
+		{ID: 5, Stage: StageRejected, UpdatedAt: month, NextActionAt: at(-1)}, // closed: neither
+	}
+
+	due, stale := Triage(apps, now)
+	ids := func(as []Application) []int64 {
+		out := make([]int64, len(as))
+		for i, a := range as {
+			out[i] = a.ID
+		}
+		return out
+	}
+	if got := ids(due); len(got) != 2 || got[0] != 2 || got[1] != 1 {
+		t.Errorf("due = %v, want [2 1] (soonest first)", got)
+	}
+	if got := ids(stale); len(got) != 1 || got[0] != 3 {
+		t.Errorf("stale = %v, want [3]", got)
+	}
+}

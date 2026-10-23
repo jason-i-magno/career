@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 )
@@ -149,6 +150,31 @@ func (a Application) Stale(now time.Time, d time.Duration) bool {
 // Due reports whether the next action is due on or before now.
 func (a Application) Due(now time.Time) bool {
 	return a.NextActionAt != nil && !a.NextActionAt.After(now)
+}
+
+// StaleAfter is how long an active application may sit untouched before it is
+// flagged. Two weeks is roughly the point at which a polite nudge is still
+// natural and the role is probably still open.
+const StaleAfter = 14 * 24 * time.Hour
+
+// Triage picks out the applications that need attention: those whose next
+// action is due, soonest first, and those that have gone quiet. A due action is
+// the more specific signal, so an application that is both is reported as due.
+// Closed applications are never either.
+func Triage(apps []Application, now time.Time) (due, stale []Application) {
+	for _, a := range apps {
+		switch {
+		case a.Stage.Terminal():
+		case a.Due(now):
+			due = append(due, a)
+		case a.Stale(now, StaleAfter):
+			stale = append(stale, a)
+		}
+	}
+	slices.SortStableFunc(due, func(a, b Application) int {
+		return a.NextActionAt.Compare(*b.NextActionAt)
+	})
+	return due, stale
 }
 
 // EventKind classifies entries in an application's activity log.

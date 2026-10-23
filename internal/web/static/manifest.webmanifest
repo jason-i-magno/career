@@ -1,0 +1,10 @@
+{
+  "name": "career",
+  "short_name": "career",
+  "description": "Job-search pipeline, story bank and interview prep",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f5f2",
+  "theme_color": "#f6f5f2"
+}

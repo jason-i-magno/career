@@ -1,0 +1,29 @@
+{{define "layout" -}}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181c" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="career">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/static/style.css">
+<title>{{.Title}} · career</title>
+</head>
+<body>
+<main>
+{{template "content" .}}
+</main>
+<nav>
+<a href="/"{{if eq .Tab "today"}} aria-current="page"{{end}}>Today</a>
+<a href="/prep"{{if eq .Tab "prep"}} aria-current="page"{{end}}>Prep</a>
+<a href="/apps"{{if eq .Tab "apps"}} aria-current="page"{{end}}>Pipeline</a>
+<a href="/stories"{{if eq .Tab "stories"}} aria-current="page"{{end}}>Stories</a>
+</nav>
+</body>
+</html>
+{{- end}}

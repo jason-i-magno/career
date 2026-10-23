@@ -1,0 +1,28 @@
+{{define "content" -}}
+<header>
+<h1>{{.App.Company}}</h1>
+<p>{{.App.Role}}</p>
+</header>
+
+<dl class="facts">
+<dt>Stage</dt><dd><span class="stage stage-{{.App.Stage}}">{{.App.Stage}}</span></dd>
+<dt>Track</dt><dd>{{.App.Track}} · via {{.App.Source}}</dd>
+{{with .Location}}<dt>Location</dt><dd>{{.}}</dd>{{end}}
+{{with .App.Contact}}<dt>Contact</dt><dd>{{.}}</dd>{{end}}
+{{with .App.BaseComp}}<dt>Base</dt><dd>${{usd .}}</dd>{{end}}
+{{with .App.URL}}<dt>Posting</dt><dd><a href="{{.}}" rel="noreferrer noopener" target="_blank">{{.}}</a></dd>{{end}}
+<dt>Updated</dt><dd>{{rel .App.UpdatedAt .Now}}</dd>
+{{with .App.NextAction}}<dt>Next</dt><dd>{{.}}{{with $.App.NextActionAt}} · {{rel . $.Now}}{{end}}</dd>{{end}}
+</dl>
+
+{{with .Events}}
+<section>
+<h2>History</h2>
+<ol class="history">
+{{range .}}<li><span class="muted">{{.At.Local.Format "2 Jan 2006"}} · {{.Kind}}</span><p>{{.Body}}</p></li>
+{{end}}</ol>
+</section>
+{{end}}
+
+<p class="muted">Edit with <code>career app set {{.App.ID}}</code>.</p>
+{{- end}}

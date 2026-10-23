@@ -60,13 +60,14 @@ cmd/career          entry point; delegates immediately to internal/cli
 internal/model      domain types and rules — no I/O, no SQL, no printing
 internal/prep       SM-2 scheduler: pure function of (item, grade, now)
 internal/store      SQLite persistence, migrations, queries
-internal/cli        dispatch, flag parsing, all rendering
+internal/cli        dispatch, flag parsing, terminal rendering
+internal/web        `career serve`: HTML pages over the same store and model
 ```
 
 The layering is the point and is worth preserving:
 
 - **`model` imports nothing from the other packages.** Business rules
-  (`Story.Ready()`, `Application.Stale()`, `CoverageGaps`, stage ordering) live
+  (`Story.Ready()`, `Application.Stale()`, `Triage`, `CoverageGaps`, stage ordering) live
   here so they can be tested without a database. New domain rules go here, not
   in `cli`.
 - **`prep.Review` does not mutate its input and takes `now` as an argument.**
@@ -74,8 +75,10 @@ The layering is the point and is worth preserving:
   never call `time.Now()` inside it.
 - **`store` returns domain types**, never raw rows, and wraps every error with
   context. Lookups that miss return `ErrNotFound` (check with `errors.Is`).
-- **`cli` owns all formatting.** No `fmt.Print` anywhere else. Output goes to
-  `Env.Out`/`Env.Err`, never `os.Stdout` directly, so commands stay testable.
+- **`cli` and `web` own all presentation.** `model`, `prep` and `store` never
+  print or render. CLI output goes to `Env.Out`/`Env.Err`, never `os.Stdout`
+  directly, so commands stay testable. `web` renders embedded `html/template`
+  pages and logs through the `slog.Logger` it is handed.
 
 ### Things that will bite you
 
@@ -105,6 +108,15 @@ them. There is a test asserting the cascade works.
 interview-ready only when complete *and* sanitized. Never default it to true,
 never infer it, and do not add a command that flips it in bulk — the whole point
 is that a human asserts each one deliberately.
+
+**`career serve` has no login.** It listens on loopback and relies on a proxy
+such as `tailscale serve` for TLS and access control. In its place, each with a
+test: `checkHost` refuses foreign Host headers (DNS rebinding), and
+`http.CrossOriginProtection` refuses cross-site form posts. Keep both, and
+think about both before adding any endpoint that writes. A grade is applied only
+while the card is due, so a resubmitted form cannot review it twice.
+Unsanitized story text is deliberately never served; the CLI is the only place
+to read it.
 
 **`career seed` must stay idempotent.** It matches existing cards and stories on
 whitespace/case-normalized text (`normalise`). Re-running after adding seed
