@@ -1,0 +1,18 @@
+{{define "content" -}}
+{{$r := ready .Story}}
+<header>
+<h1>{{.Story.Title}}</h1>
+<p><span class="badge badge-{{$r.Class}}">{{$r.Label}}</span>{{with .Story.Competencies}} <span class="muted">{{comps .}}</span>{{end}}</p>
+</header>
+
+{{range .Sections}}
+<section>
+<h2>{{.Name}}</h2>
+{{if .Body}}<p class="prose">{{.Body}}</p>{{else}}<p class="empty">(empty)</p>{{end}}
+</section>
+{{else}}
+<p class="flash">This story is not marked sanitized, so its text is shown only in the terminal: <code>career story show {{.Story.ID}}</code></p>
+{{end}}
+
+<p class="muted">Edit with <code>career story edit {{.Story.ID}}</code>.</p>
+{{- end}}

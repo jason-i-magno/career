@@ -1,0 +1,18 @@
+{{define "content" -}}
+<header>
+<h1>Pipeline</h1>
+<p class="muted">{{if .All}}Every application. <a href="/apps">Active only</a>{{else}}Active applications. <a href="/apps?all=1">Include closed</a>{{end}}</p>
+</header>
+
+{{with .Apps}}
+<ul class="rows">
+{{range .}}<li><a href="/apps/{{.ID}}">
+<span class="row-head"><strong>{{.Company}}</strong><span class="stage stage-{{.Stage}}">{{.Stage}}</span></span>
+<span>{{.Role}}</span>
+{{with .NextAction}}<span class="muted">next: {{.}}</span>{{end}}
+</a></li>
+{{end}}</ul>
+{{else}}
+<p class="clear">{{if .All}}No applications yet.{{else}}No active applications.{{end}} Add one with <code>career app add</code>.</p>
+{{end}}
+{{- end}}

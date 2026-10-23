@@ -40,6 +40,7 @@ var commands = []command{
 	{"prep", "spaced-repetition interview prep", runPrep},
 	{"stats", "funnel and conversion rates by source and track", runStats},
 	{"seed", "load the starter prep deck and story prompts", runSeed},
+	{"serve", "serve the dashboard and prep review over HTTP", runServe},
 }
 
 // Main is the process entry point. It resolves the database, builds an Env and

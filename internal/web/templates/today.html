@@ -1,0 +1,53 @@
+{{define "content" -}}
+<header>
+<h1>Today</h1>
+<p class="muted">{{.Now.Format "Monday 2 January"}}</p>
+</header>
+
+{{with .Due}}
+<section>
+<h2>Due now <span class="count">{{len .}}</span></h2>
+<ul class="rows">
+{{range .}}<li><a href="/apps/{{.ID}}">
+<span class="row-head"><strong>{{.Company}}</strong><span class="stage stage-{{.Stage}}">{{.Stage}}</span></span>
+<span class="due">{{.NextAction}} · {{rel .NextActionAt $.Now}}</span>
+</a></li>
+{{end}}</ul>
+</section>
+{{end}}
+
+{{with .Stale}}
+<section>
+<h2>Gone quiet <span class="count">{{len .}}</span></h2>
+<p class="muted">Untouched for over two weeks. Follow up or close them out.</p>
+<ul class="rows">
+{{range .}}<li><a href="/apps/{{.ID}}">
+<span class="row-head"><strong>{{.Company}}</strong><span class="stage stage-{{.Stage}}">{{.Stage}}</span></span>
+<span class="muted">last touched {{rel .UpdatedAt $.Now}}</span>
+</a></li>
+{{end}}</ul>
+</section>
+{{end}}
+
+{{if .PrepDue}}
+<section>
+<h2>Prep due <span class="count">{{.PrepDue}}</span></h2>
+<p class="chips">{{range .PrepSubjects}}<a class="chip" href="/prep?subject={{.Subject}}">{{.Subject}} {{.Due}}/{{.Total}}</a>{{end}}</p>
+<p><a class="button" href="/prep">Start review</a></p>
+</section>
+{{end}}
+
+{{with .Gaps}}
+<section>
+<h2>Story gaps <span class="count">{{len .}}</span></h2>
+<p>{{comps .}}</p>
+<p class="muted">Draft one with <code>career story add</code>.</p>
+</section>
+{{end}}
+
+{{if not (or .Due .Stale .PrepDue)}}
+<p class="clear">Nothing due. Good time to add opportunities or draft a story.</p>
+{{end}}
+
+<p class="muted foot">{{.Live}} live {{plural .Live "opportunity" "opportunities"}}, {{.Leads}} {{plural .Leads "lead" "leads"}} not yet applied to</p>
+{{- end}}

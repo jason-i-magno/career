@@ -23,6 +23,19 @@ func newTestStore(t *testing.T) (*Store, context.Context) {
 
 var testNow = time.Date(2026, time.September, 15, 10, 0, 0, 0, time.UTC)
 
+// The CLI and `career serve` share one database file, so neither may lock the
+// other out while it writes.
+func TestOpenEnablesWAL(t *testing.T) {
+	s, ctx := newTestStore(t)
+	var mode string
+	if err := s.db.QueryRowContext(ctx, `PRAGMA journal_mode`).Scan(&mode); err != nil {
+		t.Fatalf("reading journal_mode: %v", err)
+	}
+	if mode != "wal" {
+		t.Errorf("journal_mode = %q, want wal", mode)
+	}
+}
+
 func TestApplicationRoundTrip(t *testing.T) {
 	s, ctx := newTestStore(t)
 	due := testNow.AddDate(0, 0, 3)

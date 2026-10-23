@@ -6,16 +6,10 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/jason-i-magno/career/internal/model"
 	"github.com/jason-i-magno/career/internal/store"
 )
-
-// StaleAfter is how long an active application may sit untouched before it is
-// flagged. Two weeks is roughly the point at which a polite nudge is still
-// natural and the role is probably still open.
-const StaleAfter = 14 * 24 * time.Hour
 
 // runToday is the command you run every morning: what is overdue, what has gone
 // quiet, and what is due to review.
@@ -27,18 +21,7 @@ func runToday(ctx context.Context, env *Env, args []string) error {
 		return err
 	}
 
-	var due, stale []model.Application
-	for _, a := range apps {
-		switch {
-		case a.Due(now):
-			due = append(due, a)
-		case a.Stale(now, StaleAfter):
-			stale = append(stale, a)
-		}
-	}
-	slices.SortStableFunc(due, func(a, b model.Application) int {
-		return a.NextActionAt.Compare(*b.NextActionAt)
-	})
+	due, stale := model.Triage(apps, now)
 
 	fmt.Fprintf(env.Out, "\n%s  %s\n", bold("career"), dim(now.Format("Mon 2 Jan 2006")))
 

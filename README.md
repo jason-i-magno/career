@@ -69,6 +69,24 @@ career stats                         # funnel and conversion by source
 
 Run `career <command> -h` for any command's flags.
 
+## On your phone
+
+`career serve` puts the dashboard, the prep review and read-only views of the
+pipeline and story bank on a small web server, laid out for a phone.
+
+```sh
+career serve                         # http://127.0.0.1:8080
+tailscale serve --bg 8080            # the same, over HTTPS, on your tailnet
+```
+
+There is no login, so it listens on loopback only. Reach it from other devices
+through a proxy that adds TLS and access control; `tailscale serve` does both.
+Open the tailnet address on the phone and use *Add to Home Screen* to run it
+full-screen like an app. The database stays on the machine running the server.
+
+Unsanitized stories show their title and status but not their text. A phone gets
+read in more places than a terminal does.
+
 ## Why it is shaped this way
 
 **Stale beats sent.** Applications die from silence more often than rejection,
@@ -106,6 +124,7 @@ internal/model      domain types and rules — no I/O, no SQL
 internal/prep       SM-2 spaced repetition, a pure function of (state, grade, now)
 internal/store      SQLite persistence, migrations, queries
 internal/cli        command dispatch, flag parsing, rendering
+internal/web        `career serve`: server-rendered HTML, no JavaScript
 ```
 
 The domain layer knows nothing about storage or presentation. That is what lets

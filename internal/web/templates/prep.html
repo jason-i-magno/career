@@ -1,0 +1,45 @@
+{{define "content" -}}
+<header>
+<h1>Prep</h1>
+{{if .Card}}<p class="muted">{{.Remaining}} due{{with .Subject}} in {{.}}{{end}}</p>{{end}}
+</header>
+
+{{with .Last}}
+<p class="flash">✓ #{{.ID}} next in {{.IntervalDays}}d
+{{- if .WantsAnswer}}<br>Forgotten {{.Lapses}}× — write an answer with <code>career prep answer {{.ID}}</code>{{end}}</p>
+{{end}}
+
+{{if .Subjects}}
+<p class="chips">
+<a class="chip" href="/prep"{{if not .Subject}} aria-current="true"{{end}}>all</a>
+{{- range .Subjects}}
+<a class="chip" href="/prep?subject={{.Subject}}"{{if eq .Subject $.Subject}} aria-current="true"{{end}}>{{.Subject}} {{.Due}}</a>
+{{- end}}
+</p>
+{{end}}
+
+{{with .Card}}
+<article class="card">
+<p class="muted">{{.Subject}}</p>
+<p class="prompt">{{.Prompt}}</p>
+{{if or .Answer .Ref}}
+<details>
+<summary>Say it out loud, then show the answer</summary>
+{{with .Answer}}<div class="answer">{{.}}</div>{{end}}
+{{with .Ref}}<p class="muted">ref: {{if isURL .}}<a href="{{.}}" rel="noreferrer noopener" target="_blank">{{.}}</a>{{else}}{{.}}{{end}}</p>{{end}}
+</details>
+{{else}}
+<p class="muted">Say your answer out loud before you grade it.</p>
+{{end}}
+</article>
+<form class="grades" method="post" action="/prep/{{.ID}}/grade">
+{{with $.Subject}}<input type="hidden" name="subject" value="{{.}}">{{end}}
+<button name="grade" value="again" class="again">Again</button>
+<button name="grade" value="hard">Hard</button>
+<button name="grade" value="good" class="good">Good</button>
+<button name="grade" value="easy">Easy</button>
+</form>
+{{else}}
+<p class="clear">Nothing due{{with .Subject}} in {{.}}{{end}}. Come back tomorrow.</p>
+{{end}}
+{{- end}}

@@ -6,6 +6,7 @@
 package store
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -118,7 +119,11 @@ func Open(path string) (*Store, error) {
 	}
 	// Foreign keys are off by default in SQLite and must be enabled per
 	// connection; the DSN parameter applies it to every pooled connection.
-	db, err := sql.Open("sqlite", path+"?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)")
+	//
+	// WAL lets readers and a writer proceed at the same time. Without it,
+	// `career serve` and the CLI block each other whenever either one writes.
+	db, err := sql.Open("sqlite", path+
+		"?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)")
 	if err != nil {
 		return nil, fmt.Errorf("opening database: %w", err)
 	}
@@ -131,6 +136,14 @@ func Open(path string) (*Store, error) {
 }
 
 func (s *Store) Close() error { return s.db.Close() }
+
+// Ping reports whether the database is reachable.
+func (s *Store) Ping(ctx context.Context) error {
+	if err := s.db.PingContext(ctx); err != nil {
+		return fmt.Errorf("pinging database: %w", err)
+	}
+	return nil
+}
 
 // migrate applies any migrations the database has not yet seen, using SQLite's
 // user_version pragma as the schema version counter.
