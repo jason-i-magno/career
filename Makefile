@@ -13,7 +13,7 @@ GOFILES := $(shell find . -name '*.go' -not -path './bin/*')
 .PHONY: help
 help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) \
-		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: build
 build: ## Build the career binary into bin/
@@ -22,6 +22,24 @@ build: ## Build the career binary into bin/
 .PHONY: install
 install: ## Install career into $GOBIN (or ~/go/bin)
 	$(GO) install ./cmd/career
+
+# Where `go install` puts the binary, and where systemd looks for user units.
+GOBIN_DIR = $(or $(shell $(GO) env GOBIN),$(firstword $(subst :, ,$(shell $(GO) env GOPATH)))/bin)
+UNIT_DIR  = $(or $(XDG_CONFIG_HOME),$(HOME)/.config)/systemd/user
+
+.PHONY: install-service
+install-service: install ## Install career and run `career serve` as a systemd user service
+	mkdir -p $(UNIT_DIR)
+	sed 's|@BIN@|$(GOBIN_DIR)/career|' contrib/systemd/career.service > $(UNIT_DIR)/career.service
+	systemctl --user daemon-reload
+	systemctl --user enable career.service
+	systemctl --user restart career.service
+
+.PHONY: uninstall-service
+uninstall-service: ## Stop and remove the systemd user service
+	-systemctl --user disable --now career.service
+	rm -f $(UNIT_DIR)/career.service
+	systemctl --user daemon-reload
 
 .PHONY: test
 test: ## Run all tests
