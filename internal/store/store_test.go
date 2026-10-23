@@ -28,7 +28,7 @@ func TestApplicationRoundTrip(t *testing.T) {
 	due := testNow.AddDate(0, 0, 3)
 
 	want := model.Application{
-		Company: "Cloudflare", Role: "Systems Engineer", Stage: model.StageApplied,
+		Company: "Globex", Role: "Systems Engineer", Stage: model.StageApplied,
 		Track: model.TrackSystems, Source: model.SourceReferral,
 		Location: "Austin", Remote: true, URL: "https://example.invalid/job",
 		Contact: "a former colleague", BaseComp: 210000,
@@ -190,8 +190,8 @@ func TestEventsCascadeOnApplicationDelete(t *testing.T) {
 func TestStoryRoundTripWithCompetencies(t *testing.T) {
 	s, ctx := newTestStore(t)
 	want := model.Story{
-		Title: "Zero-downtime rollout", Situation: "s", Task: "t", Action: "a", Result: "r",
-		Metrics:      "cut deploy window from 6h to 0",
+		Title: "Flaky integration suite", Situation: "s", Task: "t", Action: "a", Result: "r",
+		Metrics:      "one run in five failing to none",
 		Competencies: []model.Competency{model.CompDelivery, model.CompOwnership},
 		Sanitized:    true,
 	}

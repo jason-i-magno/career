@@ -112,7 +112,9 @@ content should add only what is new and never reset scheduler state.
 
 **The seed deck is public content.** `internal/cli/seeddata.go` must stay
 generic — no employer names, no personal history, no résumé specifics. Cards are
-questions anyone in a systems or backend loop could be asked.
+questions anyone in a systems or backend loop could be asked. The same applies to
+test fixtures and README examples: use fictional companies (Acme, Globex) and
+invented stories, never anything that reads as real application data.
 
 ## Conventions
 
