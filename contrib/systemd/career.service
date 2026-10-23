@@ -1,0 +1,27 @@
+# A systemd user service that keeps `career serve` running.
+#
+# `make install-service` installs it with @BIN@ replaced by the path to the
+# installed binary. To change the address or the database, add an override
+# with `systemctl --user edit career`.
+
+[Unit]
+Description=career dashboard and prep review over HTTP
+Documentation=https://github.com/jason-i-magno/career#on-your-phone
+
+[Service]
+Type=exec
+ExecStart=@BIN@ serve
+Restart=on-failure
+RestartSec=5s
+
+# serve stops on SIGTERM and gives an in-flight grade up to five seconds to
+# finish writing.
+TimeoutStopSec=10s
+
+# The filesystem sandboxing options need user namespaces in a user service,
+# which some distributions restrict, so they would stop the unit starting
+# there. NoNewPrivileges needs nothing.
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

@@ -39,6 +39,7 @@ make cover          # per-package coverage
 make build          # ./bin/career
 make lint           # gofmt check (fails on unformatted) + go vet
 make doctor         # diagnose a missing Go toolchain
+make install-service  # go install, then run `career serve` as a systemd user unit
 ```
 
 Single test or package:
@@ -62,6 +63,7 @@ internal/prep       SM-2 scheduler: pure function of (item, grade, now)
 internal/store      SQLite persistence, migrations, queries
 internal/cli        dispatch, flag parsing, terminal rendering
 internal/web        `career serve`: HTML pages over the same store and model
+contrib/systemd     user unit for `career serve`; `@BIN@` is filled in at install
 ```
 
 The layering is the point and is worth preserving:
@@ -117,6 +119,12 @@ think about both before adding any endpoint that writes. A grade is applied only
 while the card is due, so a resubmitted form cannot review it twice.
 Unsanitized story text is deliberately never served; the CLI is the only place
 to read it.
+
+**The systemd unit stays unsandboxed apart from `NoNewPrivileges`.** In a user
+service, `ProtectSystem`, `PrivateTmp` and the like need unprivileged user
+namespaces, which some distributions restrict, and the unit then fails to start.
+`serve` exits 0 on SIGTERM, so `systemctl --user stop` is not a failure and
+`Restart=on-failure` leaves it stopped.
 
 **`career seed` must stay idempotent.** It matches existing cards and stories on
 whitespace/case-normalized text (`normalise`). Re-running after adding seed

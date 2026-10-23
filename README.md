@@ -84,6 +84,19 @@ through a proxy that adds TLS and access control; `tailscale serve` does both.
 Open the tailnet address on the phone and use *Add to Home Screen* to run it
 full-screen like an app. The database stays on the machine running the server.
 
+On Linux, keep it running as a systemd user service:
+
+```sh
+make install-service    # install, enable at login, and (re)start
+journalctl --user -u career -f
+```
+
+Run it again after pulling changes; it reinstalls and restarts. It stops at
+logout unless lingering is on (`loginctl enable-linger`), which also starts it
+at boot. `make uninstall-service` removes it. Without a clone, copy
+`contrib/systemd/career.service` to `~/.config/systemd/user/` and replace
+`@BIN@` with the path to `career`.
+
 Unsanitized stories show their title and status but not their text. A phone gets
 read in more places than a terminal does.
 
