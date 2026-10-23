@@ -24,7 +24,7 @@ Fill in each section. Guidance:
   Result     The outcome, quantified. If you cannot quantify it, say what
              changed for the team or the user.
   Metrics    The number you will say out loud. Keep it relative
-             ("3x throughput", "cut deploy time from 6h to 40m") rather
+             ("3x throughput", "cut build time from 20m to 4m") rather
              than absolute where the absolute figure is sensitive.
 
   Competencies  Comma-separated, from:

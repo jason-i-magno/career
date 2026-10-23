@@ -17,13 +17,13 @@ career  Sun 30 Aug 2026
 
 Due now (1)
 ───────────
-  #3  Confluent  tech  system design prep (today)
+  #3  Globex  tech  system design prep (today)
 
 Gone quiet (2)
 ──────────────
   untouched for over two weeks — follow up or close them out
-  #7  Grafana Labs   screen   18d ago
-  #9  Redpanda       applied  21d ago
+  #7  Initech  screen   18d ago
+  #9  Hooli    applied  21d ago
 
 Prep due (23)
 ─────────────
@@ -55,7 +55,7 @@ from any host.
 career seed                          # 68 interview prep cards, 9 story stubs
 career today                         # the morning dashboard
 
-career app add Cloudflare "Systems Engineer" -track systems -source referral
+career app add Acme "Systems Engineer" -track systems -source referral
 career app set 1 -stage screen -next "prep system design" -due +3d
 career app note 1 "Recruiter mentioned the team is hiring two seniors."
 career app show 1

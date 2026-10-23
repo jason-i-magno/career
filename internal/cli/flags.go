@@ -9,7 +9,7 @@ import (
 // arguments.
 //
 // The standard flag package stops at the first non-flag argument, so
-// `app add Cloudflare "Systems Engineer" -track systems` would silently treat
+// `app add Acme "Systems Engineer" -track systems` would silently treat
 // the flags as part of the role name. Since every command here takes both
 // positionals and flags, that default is a trap. permute reorders args so the
 // flags come first, matching what every other CLI does.

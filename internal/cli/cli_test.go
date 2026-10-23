@@ -138,7 +138,7 @@ func TestPermuteThenParseBindsFlagsAndArgs(t *testing.T) {
 	track := fs.String("track", "backend", "")
 	remote := fs.Bool("remote", false, "")
 
-	args := []string{"Cloudflare", "Systems Engineer, Network", "-track", "systems", "-remote"}
+	args := []string{"Acme", "Systems Engineer, Network", "-track", "systems", "-remote"}
 	if err := parseFlags(fs, args); err != nil {
 		t.Fatalf("parseFlags: %v", err)
 	}
@@ -148,7 +148,7 @@ func TestPermuteThenParseBindsFlagsAndArgs(t *testing.T) {
 	if !*remote {
 		t.Error("remote = false, want true")
 	}
-	if got := fs.Args(); len(got) != 2 || got[0] != "Cloudflare" {
+	if got := fs.Args(); len(got) != 2 || got[0] != "Acme" {
 		t.Errorf("positionals = %q, want the company and role", got)
 	}
 }
@@ -156,12 +156,12 @@ func TestPermuteThenParseBindsFlagsAndArgs(t *testing.T) {
 func TestStoryFileRoundTrip(t *testing.T) {
 	want := model.Story{
 		ID:        7,
-		Title:     "Zero-downtime rollout",
-		Situation: "Updates required a maintenance window.",
-		Task:      "I owned removing the downtime.",
-		Action:    "Staged the config swap behind an atomic symlink flip.",
-		Result:    "Updates now ship with no interruption.",
-		Metrics:   "6h window to zero",
+		Title:     "Flaky integration suite",
+		Situation: "CI failed one run in five with no code change.",
+		Task:      "I owned making the suite trustworthy again.",
+		Action:    "Traced the failures to a shared temp directory and isolated each test.",
+		Result:    "No flaky failures in the next two hundred runs.",
+		Metrics:   "one run in five failing to none",
 		Competencies: []model.Competency{
 			model.CompOwnership, model.CompDelivery,
 		},
