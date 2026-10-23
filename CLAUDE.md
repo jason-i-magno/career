@@ -27,7 +27,7 @@ the older `GOROOT` is not a problem. Known wart: `go test -cover` on a package
 with no test files reports `no such tool "covdata"` from the auto-downloaded
 toolchain. Harmless.
 
-The machine has **podman, not docker**, and no `gh`.
+The machine has **podman, not docker**. `gh` is installed and authenticated.
 
 ## Commands
 
