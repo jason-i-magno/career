@@ -253,6 +253,21 @@ func TestRelDays(t *testing.T) {
 	}
 }
 
+func TestRelDaysCountsLocalDaysInTheEvening(t *testing.T) {
+	// At 7 pm six hours behind UTC it is already tomorrow in UTC. An action due
+	// this morning, read back from the store in UTC, is still due today.
+	west := time.FixedZone("UTC-6", -6*60*60)
+	evening := time.Date(2026, time.October, 23, 19, 0, 0, 0, west)
+	thisMorning := time.Date(2026, time.October, 23, 0, 0, 0, 0, west).UTC()
+
+	if got := relDays(thisMorning, evening); got != "today" {
+		t.Errorf("relDays = %q, want %q", got, "today")
+	}
+	if got := relDays(thisMorning.AddDate(0, 0, 1), evening); got != "tomorrow" {
+		t.Errorf("relDays = %q, want %q", got, "tomorrow")
+	}
+}
+
 func TestTruncateAndWrap(t *testing.T) {
 	if got := truncate("hello world", 5); got != "hell…" {
 		t.Errorf("truncate = %q, want %q", got, "hell…")

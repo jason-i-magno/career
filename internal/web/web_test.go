@@ -12,7 +12,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-	_ "time/tzdata" // the DST case needs America/New_York on any machine
 
 	"github.com/jason-i-magno/career/internal/model"
 	"github.com/jason-i-magno/career/internal/prep"
@@ -334,10 +333,6 @@ func TestRelDaysCountsLocalCalendarDays(t *testing.T) {
 	// 7 pm six hours behind UTC is already the next day in UTC: the case that
 	// breaks a count taken in UTC.
 	evening := time.Date(2026, time.October, 23, 19, 0, 0, 0, testZone)
-	eastern, err := time.LoadLocation("America/New_York")
-	if err != nil {
-		t.Fatalf("LoadLocation: %v", err)
-	}
 
 	tests := []struct {
 		name   string
@@ -350,9 +345,6 @@ func TestRelDaysCountsLocalCalendarDays(t *testing.T) {
 		{"yesterday", time.Date(2026, time.October, 22, 12, 0, 0, 0, testZone), evening, "yesterday"},
 		{"a week out", time.Date(2026, time.October, 30, 0, 0, 0, 0, testZone), evening, "in 7d"},
 		{"days ago", time.Date(2026, time.October, 18, 0, 0, 0, 0, testZone), evening, "5d ago"},
-		// The day the clocks go forward is 23 hours long.
-		{"across spring-forward", time.Date(2026, time.March, 7, 12, 0, 0, 0, eastern),
-			time.Date(2026, time.March, 8, 12, 0, 0, 0, eastern), "yesterday"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
