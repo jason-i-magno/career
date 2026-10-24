@@ -132,6 +132,12 @@ namespaces, which some distributions restrict, and the unit then fails to start.
 `serve` exits 0 on SIGTERM, so `systemctl --user stop` is not a failure and
 `Restart=on-failure` leaves it stopped.
 
+**`JOURNAL_STREAM` alone does not mean the journal.** Under systemd, `serve`
+drops the log timestamp and the ctrl-c hint. It decides by matching the
+variable's device and inode against stderr (`toJournal`), because shells in a
+terminal emulator that runs as a user service inherit the variable while
+writing to a terminal. Do not simplify it to a presence check.
+
 **`career seed` must stay idempotent.** It matches existing cards and stories on
 whitespace/case-normalized text (`normalise`). Re-running after adding seed
 content should add only what is new and never reset scheduler state.
