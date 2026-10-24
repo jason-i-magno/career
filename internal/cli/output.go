@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"golang.org/x/term"
+
+	"github.com/jason-i-magno/career/internal/model"
 )
 
 // styling is disabled when stdout is not a terminal or NO_COLOR is set, so that
@@ -57,11 +59,10 @@ func heading(w io.Writer, title string) {
 	fmt.Fprintf(w, "\n%s\n%s\n", bold(title), dim(strings.Repeat("─", len([]rune(title)))))
 }
 
-// relDays renders a duration relative to now in the compact form used in
-// listings: "today", "in 3d", "5d ago".
+// relDays renders t relative to now in whole local calendar days, in the
+// compact form used in listings: "today", "in 3d", "5d ago".
 func relDays(t, now time.Time) string {
-	days := int(t.Truncate(24*time.Hour).Sub(now.Truncate(24*time.Hour)).Hours() / 24)
-	switch {
+	switch days := model.DaysUntil(t, now); {
 	case days == 0:
 		return "today"
 	case days == 1:

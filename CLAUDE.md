@@ -102,6 +102,12 @@ a new element. Editing one leaves existing databases silently inconsistent.
 `fmtTime`/`parseTime` helpers in `internal/store/store.go`, and remember
 comparisons are lexical (which RFC3339 in UTC makes correct).
 
+**Days are local, though times are stored in UTC.** Due dates, review scheduling
+and labels like "today" or "in 3d" count calendar days in now's zone, through
+`model.StartOfDay` and `model.DaysUntil`. Never `Truncate(24 * time.Hour)` a
+time to find its day: that cuts at midnight UTC, which west of Greenwich falls
+in the afternoon or evening.
+
 **Foreign keys are enabled per-connection** via the DSN pragma in `store.Open`.
 They are off by default in SQLite, and the cascade delete of events depends on
 them. There is a test asserting the cascade works.

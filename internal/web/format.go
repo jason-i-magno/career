@@ -19,17 +19,10 @@ var funcs = template.FuncMap{
 	"comps":  joinCompetencies,
 }
 
-// relDays renders t relative to now in whole calendar days: "today", "in 3d",
-// "5d ago". Days are counted in now's time zone, so they turn over at local
-// midnight rather than at midnight UTC.
+// relDays renders t relative to now in whole local calendar days: "today",
+// "in 3d", "5d ago".
 func relDays(t, now time.Time) string {
-	ty, tm, td := t.In(now.Location()).Date()
-	ny, nm, nd := now.Date()
-	// Subtract the dates at UTC midnight, where every day is 24 hours long, so
-	// that a daylight-saving change cannot shift the count.
-	days := int(time.Date(ty, tm, td, 0, 0, 0, 0, time.UTC).
-		Sub(time.Date(ny, nm, nd, 0, 0, 0, 0, time.UTC)).Hours() / 24)
-	switch {
+	switch days := model.DaysUntil(t, now); {
 	case days == 0:
 		return "today"
 	case days == 1:

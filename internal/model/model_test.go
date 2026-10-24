@@ -3,6 +3,7 @@ package model
 import (
 	"testing"
 	"time"
+	_ "time/tzdata" // the DST case needs America/New_York on any machine
 )
 
 func TestCoverageGapsCountsOnlyReadyStories(t *testing.T) {
@@ -223,5 +224,50 @@ func TestTriageSeparatesDueFromQuiet(t *testing.T) {
 	}
 	if got := ids(stale); len(got) != 1 || got[0] != 3 {
 		t.Errorf("stale = %v, want [3]", got)
+	}
+}
+
+func TestDaysUntilCountsLocalCalendarDays(t *testing.T) {
+	// 7 pm six hours behind UTC is already the next day in UTC, and 9 am ten
+	// hours ahead is still the previous one: the cases a count in UTC gets wrong.
+	west := time.FixedZone("UTC-6", -6*60*60)
+	east := time.FixedZone("UTC+10", 10*60*60)
+	evening := time.Date(2026, time.October, 23, 19, 0, 0, 0, west)
+	morning := time.Date(2026, time.October, 23, 9, 0, 0, 0, east)
+	newYork, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		t.Fatalf("LoadLocation: %v", err)
+	}
+
+	tests := []struct {
+		name   string
+		t, now time.Time
+		want   int
+	}{
+		{"due this morning", time.Date(2026, time.October, 23, 0, 0, 0, 0, west), evening, 0},
+		{"stored in UTC, same local day", time.Date(2026, time.October, 23, 14, 0, 0, 0, time.UTC), evening, 0},
+		{"tomorrow", time.Date(2026, time.October, 24, 0, 0, 0, 0, west), evening, 1},
+		{"yesterday", time.Date(2026, time.October, 22, 12, 0, 0, 0, west), evening, -1},
+		{"a week out", time.Date(2026, time.October, 30, 0, 0, 0, 0, west), evening, 7},
+		{"ahead of UTC, later today", time.Date(2026, time.October, 23, 12, 0, 0, 0, time.UTC), morning, 0},
+		{"ahead of UTC, yesterday", time.Date(2026, time.October, 22, 12, 0, 0, 0, time.UTC), morning, -1},
+		// The day the clocks go forward is 23 hours long.
+		{"across spring-forward", time.Date(2026, time.March, 7, 12, 0, 0, 0, newYork),
+			time.Date(2026, time.March, 8, 12, 0, 0, 0, newYork), -1},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := DaysUntil(tc.t, tc.now); got != tc.want {
+				t.Errorf("DaysUntil = %d, want %d", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestStartOfDayKeepsTheZone(t *testing.T) {
+	west := time.FixedZone("UTC-6", -6*60*60)
+	got := StartOfDay(time.Date(2026, time.October, 23, 19, 0, 0, 0, west))
+	if want := time.Date(2026, time.October, 23, 0, 0, 0, 0, west); !got.Equal(want) {
+		t.Errorf("StartOfDay = %v, want %v", got, want)
 	}
 }

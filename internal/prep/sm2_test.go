@@ -121,6 +121,34 @@ func TestReviewSchedulesOnDayBoundary(t *testing.T) {
 	}
 }
 
+func TestReviewSchedulesOnTheReviewersDay(t *testing.T) {
+	// A one-day interval means the next local day. Cut at midnight UTC, a
+	// morning review west of Greenwich came due again that evening, and one
+	// east of it within hours.
+	tests := []struct {
+		name string
+		now  time.Time
+	}{
+		{"behind UTC", time.Date(2026, time.October, 23, 10, 0, 0, 0, time.FixedZone("UTC-6", -6*60*60))},
+		{"ahead of UTC", time.Date(2026, time.October, 23, 9, 0, 0, 0, time.FixedZone("UTC+10", 10*60*60))},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			item := model.PrepItem{Ease: DefaultEase, DueAt: tc.now}
+
+			out := Review(item, model.GradeGood, tc.now)
+
+			want := time.Date(2026, time.October, 24, 0, 0, 0, 0, tc.now.Location())
+			if !out.DueAt.Equal(want) {
+				t.Errorf("due = %v, want local midnight %v", out.DueAt.In(tc.now.Location()), want)
+			}
+			if lateToday := tc.now.Add(13 * time.Hour); out.DueBy(lateToday) {
+				t.Errorf("due again by %v, the day it was reviewed", lateToday)
+			}
+		})
+	}
+}
+
 func TestReviewRecordsGradeAndTimestamp(t *testing.T) {
 	now := day(2026, time.September, 1)
 	item := model.PrepItem{Ease: DefaultEase, DueAt: now}
