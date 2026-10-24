@@ -91,9 +91,10 @@ func Review(item model.PrepItem, grade model.Grade, now time.Time) model.PrepIte
 	g := grade
 	out.LastGrade = &g
 	// Schedule from the start of the review day so that due dates land on day
-	// boundaries rather than drifting later with each session.
-	day := now.Truncate(24 * time.Hour)
-	out.DueAt = day.AddDate(0, 0, out.IntervalDays)
+	// boundaries rather than drifting later with each session. The day is the
+	// reviewer's, in now's zone: cut at midnight UTC instead, a card graded in
+	// the morning west of Greenwich would come due again that evening.
+	out.DueAt = model.StartOfDay(now).AddDate(0, 0, out.IntervalDays)
 
 	return out
 }
