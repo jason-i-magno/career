@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -29,7 +30,11 @@ func runServe(ctx context.Context, env *Env, args []string) error {
 		return fmt.Errorf("unexpected argument %q", fs.Arg(0))
 	}
 
-	log := slog.New(slog.NewTextHandler(env.Err, nil))
+	// Under systemd the journal stamps every line with its own time, and there
+	// is no terminal to press ctrl-c in.
+	journal := toJournal(env.Err)
+
+	log := serveLogger(env.Err, journal)
 	h, err := web.New(env.Store, env.Now, log)
 	if err != nil {
 		return err
@@ -58,7 +63,11 @@ func runServe(ctx context.Context, env *Env, args []string) error {
 
 	errc := make(chan error, 1)
 	go func() { errc <- srv.Serve(ln) }()
-	fmt.Fprintf(env.Out, "%s http://%s %s\n", green("serving"), ln.Addr(), dim("(ctrl-c to stop)"))
+	hint := " " + dim("(ctrl-c to stop)")
+	if journal {
+		hint = ""
+	}
+	fmt.Fprintf(env.Out, "%s http://%s%s\n", green("serving"), ln.Addr(), hint)
 
 	select {
 	case err := <-errc:
@@ -73,4 +82,19 @@ func runServe(ctx context.Context, env *Env, args []string) error {
 		return fmt.Errorf("shutting down: %w", err)
 	}
 	return nil
+}
+
+// serveLogger returns the request logger. Output bound for the journal leaves
+// out the time, which the journal records for every line itself.
+func serveLogger(w io.Writer, journal bool) *slog.Logger {
+	opts := &slog.HandlerOptions{}
+	if journal {
+		opts.ReplaceAttr = func(groups []string, a slog.Attr) slog.Attr {
+			if a.Key == slog.TimeKey && len(groups) == 0 {
+				return slog.Attr{}
+			}
+			return a
+		}
+	}
+	return slog.New(slog.NewTextHandler(w, opts))
 }

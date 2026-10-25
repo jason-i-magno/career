@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"reflect"
@@ -403,6 +404,20 @@ func TestCompetencyPromptExistsForEveryCompetency(t *testing.T) {
 	for _, c := range model.AllCompetencies {
 		if strings.TrimSpace(competencyPrompt(c)) == "" {
 			t.Errorf("competency %q has no interview prompt", c)
+		}
+	}
+}
+
+func TestServeLoggerLeavesTheTimeToTheJournal(t *testing.T) {
+	for _, journal := range []bool{false, true} {
+		var buf bytes.Buffer
+		serveLogger(&buf, journal).Info("request", "path", "/")
+		out := buf.String()
+		if stamped := strings.Contains(out, "time="); stamped == journal {
+			t.Errorf("journal=%v: got %q", journal, out)
+		}
+		if !strings.Contains(out, "level=INFO msg=request path=/") {
+			t.Errorf("journal=%v: record missing from %q", journal, out)
 		}
 	}
 }
