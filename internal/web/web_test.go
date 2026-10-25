@@ -321,7 +321,10 @@ func TestStaticFilesAndHeaders(t *testing.T) {
 		"/static/icon-192.png":  "image/png",
 		"/static/icon-512.png":  "image/png",
 		"/apple-touch-icon.png": "image/png",
+		"/favicon.ico":          "image/png",
 		"/":                     "text/html; charset=utf-8",
+		// iOS asks for this as well, even with a link to the plain one.
+		"/apple-touch-icon-precomposed.png": "image/png",
 	} {
 		rec := do(t, h, "GET", path, nil)
 		if rec.Code != http.StatusOK {

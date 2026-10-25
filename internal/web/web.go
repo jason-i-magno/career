@@ -57,8 +57,11 @@ func New(st *store.Store, now func() time.Time, log *slog.Logger) (http.Handler,
 	mux.HandleFunc("GET /static/icon.svg", s.asset("static/icon.svg", "image/svg+xml"))
 	mux.HandleFunc("GET /static/icon-192.png", s.asset("static/icon-192.png", "image/png"))
 	mux.HandleFunc("GET /static/icon-512.png", s.asset("static/icon-512.png", "image/png"))
-	// The conventional path, which Safari also tries without being told.
+	// The conventional paths, which browsers try even when the page links its
+	// icons elsewhere.
 	mux.HandleFunc("GET /apple-touch-icon.png", s.asset("static/icon-180.png", "image/png"))
+	mux.HandleFunc("GET /apple-touch-icon-precomposed.png", s.asset("static/icon-180.png", "image/png"))
+	mux.HandleFunc("GET /favicon.ico", s.asset("static/icon-192.png", "image/png"))
 	mux.HandleFunc("/", s.notFound)
 
 	// Grading is the only write. CrossOriginProtection refuses a form post
