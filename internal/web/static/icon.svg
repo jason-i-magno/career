@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- The source for the PNG icons beside it: edit this, then `make icons`.
+       Full bleed, because iOS rounds the corners itself and fills any
+       transparency with black; the steps stay inside the central circle that
+       a maskable icon keeps. -->
+  <rect width="512" height="512" fill="#2f5fd0"/>
+  <path d="M136 376V296H216V216H296V136H376V376Z" fill="#fff" stroke="#fff" stroke-width="24" stroke-linejoin="round"/>
+</svg>
