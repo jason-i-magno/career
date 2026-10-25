@@ -2,7 +2,10 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"image"
+	"image/png"
 	"io"
 	"log/slog"
 	"net/http"
@@ -314,7 +317,14 @@ func TestStaticFilesAndHeaders(t *testing.T) {
 	for path, contentType := range map[string]string{
 		"/manifest.webmanifest": "application/manifest+json",
 		"/static/style.css":     "text/css; charset=utf-8",
+		"/static/icon.svg":      "image/svg+xml",
+		"/static/icon-192.png":  "image/png",
+		"/static/icon-512.png":  "image/png",
+		"/apple-touch-icon.png": "image/png",
+		"/favicon.ico":          "image/png",
 		"/":                     "text/html; charset=utf-8",
+		// iOS asks for this as well, even with a link to the plain one.
+		"/apple-touch-icon-precomposed.png": "image/png",
 	} {
 		rec := do(t, h, "GET", path, nil)
 		if rec.Code != http.StatusOK {
@@ -325,6 +335,49 @@ func TestStaticFilesAndHeaders(t *testing.T) {
 		}
 		if !strings.Contains(rec.Header().Get("Content-Security-Policy"), "default-src 'none'") {
 			t.Errorf("%s: missing the content security policy", path)
+		}
+	}
+}
+
+func TestIconsAreTheSizesThePagesPromise(t *testing.T) {
+	_, h := newTestServer(t)
+	decode := func(path string) image.Image {
+		t.Helper()
+		rec := do(t, h, "GET", path, nil)
+		if rec.Code != http.StatusOK {
+			t.Fatalf("%s: status = %d, want 200", path, rec.Code)
+		}
+		img, err := png.Decode(rec.Body)
+		if err != nil {
+			t.Fatalf("%s: %v", path, err)
+		}
+		return img
+	}
+
+	assertContains(t, do(t, h, "GET", "/", nil).Body.String(),
+		`<link rel="apple-touch-icon" href="/apple-touch-icon.png">`)
+	touch := decode("/apple-touch-icon.png")
+	if b := touch.Bounds(); b.Dx() != 180 || b.Dy() != 180 {
+		t.Errorf("apple-touch-icon is %v, want 180x180", b.Size())
+	}
+	// iOS fills transparent pixels with black.
+	if o, ok := touch.(interface{ Opaque() bool }); !ok || !o.Opaque() {
+		t.Error("apple-touch-icon must be opaque")
+	}
+
+	var manifest struct {
+		Icons []struct{ Src, Sizes string }
+	}
+	if err := json.NewDecoder(do(t, h, "GET", "/manifest.webmanifest", nil).Body).Decode(&manifest); err != nil {
+		t.Fatalf("decoding manifest: %v", err)
+	}
+	if len(manifest.Icons) == 0 {
+		t.Fatal("manifest lists no icons")
+	}
+	for _, icon := range manifest.Icons {
+		b := decode(icon.Src).Bounds()
+		if got := fmt.Sprintf("%dx%d", b.Dx(), b.Dy()); got != icon.Sizes {
+			t.Errorf("%s is %s, manifest says %s", icon.Src, got, icon.Sizes)
 		}
 	}
 }

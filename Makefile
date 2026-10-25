@@ -41,6 +41,15 @@ uninstall-service: ## Stop and remove the systemd user service
 	rm -f $(UNIT_DIR)/career.service
 	systemctl --user daemon-reload
 
+ICON_DIR := internal/web/static
+
+.PHONY: icons
+icons: ## Render the web icons from icon.svg (needs ImageMagick)
+	for n in 180 192 512; do \
+		magick -background none -density 384 $(ICON_DIR)/icon.svg -resize $${n}x$${n} \
+			-alpha off -depth 8 -strip $(ICON_DIR)/icon-$$n.png || exit 1; \
+	done
+
 .PHONY: test
 test: ## Run all tests
 	$(GO) test $(PKG)

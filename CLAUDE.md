@@ -40,6 +40,7 @@ make build          # ./bin/career
 make lint           # gofmt check (fails on unformatted) + go vet
 make doctor         # diagnose a missing Go toolchain
 make install-service  # go install, then run `career serve` as a systemd user unit
+make icons          # re-render the web icon PNGs from static/icon.svg (ImageMagick)
 ```
 
 Single test or package:
