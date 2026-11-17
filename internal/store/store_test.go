@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
@@ -477,5 +478,76 @@ func TestPrepAnswerRoundTrips(t *testing.T) {
 	}
 	if cleared.Answer != "" {
 		t.Errorf("answer = %q, want cleared", cleared.Answer)
+	}
+}
+
+func TestSaveDocReusesTheIDWhenANameIsSavedAgain(t *testing.T) {
+	s, ctx := newTestStore(t)
+
+	first, err := s.SaveDoc(ctx, model.Doc{Name: "Notes", Path: "/old/notes.md"}, testNow)
+	if err != nil {
+		t.Fatalf("SaveDoc: %v", err)
+	}
+	// Moving the file and registering it again must keep the dashboard link.
+	second, err := s.SaveDoc(ctx, model.Doc{Name: "Notes", Path: "/new/notes.md"}, testNow.Add(time.Hour))
+	if err != nil {
+		t.Fatalf("SaveDoc again: %v", err)
+	}
+	if second != first {
+		t.Errorf("second save got id %d, want %d", second, first)
+	}
+	d, err := s.GetDoc(ctx, first)
+	if err != nil {
+		t.Fatalf("GetDoc: %v", err)
+	}
+	if d.Path != "/new/notes.md" {
+		t.Errorf("path = %q, want the new path", d.Path)
+	}
+	if !d.CreatedAt.Equal(testNow) {
+		t.Errorf("created_at = %v, want the first registration time %v", d.CreatedAt, testNow)
+	}
+}
+
+func TestSaveDocRejectsARelativePath(t *testing.T) {
+	s, ctx := newTestStore(t)
+	if _, err := s.SaveDoc(ctx, model.Doc{Name: "Notes", Path: "notes.md"}, testNow); err == nil {
+		t.Error("SaveDoc with a relative path should have failed")
+	}
+}
+
+func TestListDocsOrdersByNameIgnoringCase(t *testing.T) {
+	s, ctx := newTestStore(t)
+	for _, name := range []string{"zebra", "Apple", "mango"} {
+		if _, err := s.SaveDoc(ctx, model.Doc{Name: name, Path: "/docs/" + name + ".md"}, testNow); err != nil {
+			t.Fatalf("SaveDoc %s: %v", name, err)
+		}
+	}
+	docs, err := s.ListDocs(ctx)
+	if err != nil {
+		t.Fatalf("ListDocs: %v", err)
+	}
+	var got []string
+	for _, d := range docs {
+		got = append(got, d.Name)
+	}
+	if want := []string{"Apple", "mango", "zebra"}; !slices.Equal(got, want) {
+		t.Errorf("order = %v, want %v", got, want)
+	}
+}
+
+func TestDeleteDocAndMissingLookups(t *testing.T) {
+	s, ctx := newTestStore(t)
+	id, err := s.SaveDoc(ctx, model.Doc{Name: "Notes", Path: "/docs/notes.md"}, testNow)
+	if err != nil {
+		t.Fatalf("SaveDoc: %v", err)
+	}
+	if err := s.DeleteDoc(ctx, "Notes"); err != nil {
+		t.Fatalf("DeleteDoc: %v", err)
+	}
+	if _, err := s.GetDoc(ctx, id); !errors.Is(err, ErrNotFound) {
+		t.Errorf("GetDoc after delete: err = %v, want ErrNotFound", err)
+	}
+	if err := s.DeleteDoc(ctx, "Notes"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("DeleteDoc twice: err = %v, want ErrNotFound", err)
 	}
 }

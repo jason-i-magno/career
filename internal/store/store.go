@@ -95,6 +95,15 @@ var migrations = []string{
 	// 2: optional written answer, revealed during review. Empty by default —
 	// most cards are open prompts with no single right answer.
 	`ALTER TABLE prep_items ADD COLUMN answer TEXT NOT NULL DEFAULT '';`,
+
+	// 3: files registered for reading on the dashboard. Only the name and path
+	// live here; the text stays in the file and is read on every view.
+	`CREATE TABLE docs (
+		id         INTEGER PRIMARY KEY AUTOINCREMENT,
+		name       TEXT    NOT NULL UNIQUE,
+		path       TEXT    NOT NULL,
+		created_at TEXT    NOT NULL
+	);`,
 }
 
 // DefaultPath returns the database location, honouring CAREER_DB when set so

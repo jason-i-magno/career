@@ -1,0 +1,15 @@
+{{define "content" -}}
+<header>
+<h1>{{.Doc.Name}}</h1>
+{{if not .Modified.IsZero}}<p class="muted">Changed {{rel .Modified .Now}}</p>{{end}}
+</header>
+
+{{with .Problem}}
+<p class="flash flash-bad">{{.}}</p>
+<p class="muted">Registered as <code>{{$.Doc.Path}}</code>.</p>
+{{else}}
+<article class="doc">
+{{.Body}}
+</article>
+{{end}}
+{{- end}}

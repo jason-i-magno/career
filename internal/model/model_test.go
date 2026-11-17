@@ -271,3 +271,22 @@ func TestStartOfDayKeepsTheZone(t *testing.T) {
 		t.Errorf("StartOfDay = %v, want %v", got, want)
 	}
 }
+
+func TestDocValidateNeedsANameAndAnAbsolutePath(t *testing.T) {
+	tests := []struct {
+		name string
+		doc  Doc
+		ok   bool
+	}{
+		{"named and absolute", Doc{Name: "Notes", Path: "/home/someone/notes.md"}, true},
+		{"blank name", Doc{Name: "  ", Path: "/home/someone/notes.md"}, false},
+		{"relative path", Doc{Name: "Notes", Path: "notes.md"}, false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if err := tc.doc.Validate(); (err == nil) != tc.ok {
+				t.Errorf("Validate() = %v, want ok=%v", err, tc.ok)
+			}
+		})
+	}
+}

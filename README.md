@@ -71,8 +71,9 @@ Run `career <command> -h` for any command's flags.
 
 ## On your phone
 
-`career serve` puts the dashboard, the prep review and read-only views of the
-pipeline and story bank on a small web server, laid out for a phone.
+`career serve` puts the dashboard, the prep review, read-only views of the
+pipeline and story bank, and any Markdown docs you register on a small web
+server, laid out for a phone.
 
 ```sh
 career serve                         # http://127.0.0.1:8080
@@ -99,6 +100,24 @@ at boot. `make uninstall-service` removes it. Without a clone, copy
 
 Unsanitized stories show their title and status but not their text. A phone gets
 read in more places than a terminal does.
+
+### Docs
+
+Notes you keep elsewhere — a checklist, a reading list, prep notes in another
+repository — can be read under the *Docs* tab:
+
+```sh
+career doc add "Reading list" ~/notes/reading.md
+career doc list
+career doc rm "Reading list"         # unregisters it; the file is untouched
+```
+
+Only the name and path go into the database. The file is read afresh on every
+view, so edits show up on the next page load, and the text is never copied
+anywhere. Task lists, tables and autolinks render; raw HTML in the file does
+not. There is no sanitized gate in front of a doc, as there is for a story:
+anything in a registered file can be read by every device that reaches the
+server, so register only what you would be happy to read on the phone.
 
 ## Why it is shaped this way
 
@@ -149,6 +168,9 @@ pure-Go implementation — no cgo, so builds stay simple and cross-compilation
 works. Timestamps are RFC3339 text in UTC, which keeps the database readable
 with the `sqlite3` CLI when something looks wrong. Migrations run on open,
 tracked by SQLite's `user_version`.
+
+**Docs** render with [goldmark](https://github.com/yuin/goldmark), also pure Go,
+the one dependency beyond storage and the terminal check.
 
 Data lives at `~/.local/share/career/career.db`. Override with `CAREER_DB`.
 Nothing leaves your machine.

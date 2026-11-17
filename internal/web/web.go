@@ -1,6 +1,6 @@
-// Package web serves the dashboard, the prep review session and read-only views
-// of the pipeline and story bank over HTTP, so the database can be used from a
-// phone.
+// Package web serves the dashboard, the prep review session, read-only views
+// of the pipeline and story bank, and the Markdown docs you register, over
+// HTTP, so the database can be used from a phone.
 //
 // It is meant to listen on loopback behind a proxy that adds TLS and access
 // control, such as `tailscale serve`. There is no login: anyone who can reach
@@ -51,6 +51,8 @@ func New(st *store.Store, now func() time.Time, log *slog.Logger) (http.Handler,
 	mux.HandleFunc("GET /apps/{id}", s.appShow)
 	mux.HandleFunc("GET /stories", s.storyList)
 	mux.HandleFunc("GET /stories/{id}", s.storyShow)
+	mux.HandleFunc("GET /docs", s.docList)
+	mux.HandleFunc("GET /docs/{id}", s.docShow)
 	mux.HandleFunc("GET /healthz", s.healthz)
 	mux.HandleFunc("GET /static/style.css", s.asset("static/style.css", "text/css; charset=utf-8"))
 	mux.HandleFunc("GET /manifest.webmanifest", s.asset("static/manifest.webmanifest", "application/manifest+json"))
@@ -72,7 +74,7 @@ func New(st *store.Store, now func() time.Time, log *slog.Logger) (http.Handler,
 	return s.logRequests(h), nil
 }
 
-var pageNames = []string{"today", "prep", "apps", "app", "stories", "story", "error"}
+var pageNames = []string{"today", "prep", "apps", "app", "stories", "story", "docs", "doc", "error"}
 
 // parsePages pairs the layout with each page, so that every page can define
 // its own "content" block.
