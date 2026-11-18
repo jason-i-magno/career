@@ -228,3 +228,37 @@ nav a {
 }
 
 nav a[aria-current] { color: var(--accent); font-weight: 600; }
+
+.flash-bad { border-left-color: var(--bad); }
+
+/* A registered doc, rendered from Markdown. The site's h2 is a small section
+   label; inside a doc, headings are the doc's own structure. */
+.doc { line-height: 1.5; }
+.doc h1 { font-size: 1.35rem; margin: 1.5rem 0 0.5rem; }
+.doc h2 {
+  font-size: 1.15rem;
+  margin: 1.75rem 0 0.5rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+}
+.doc h3, .doc h4 { font-size: 1rem; margin: 1.25rem 0 0.4rem; }
+.doc ul, .doc ol { padding-left: 1.25rem; }
+.doc li { margin: 0.3rem 0; }
+.doc li > p { margin: 0.3rem 0; }
+.doc li:has(> input[type="checkbox"]), .doc li:has(> p > input[type="checkbox"]) {
+  list-style: none;
+  margin-left: -1.25rem;
+}
+.doc input[type="checkbox"] { margin: 0 0.45em 0 0; vertical-align: -0.1em; }
+.doc pre {
+  padding: 0.75rem;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.doc blockquote { margin: 1rem 0; padding-left: 0.9rem; border-left: 3px solid var(--line); color: var(--muted); }
+.doc table { display: block; overflow-x: auto; border-collapse: collapse; }
+.doc th, .doc td { padding: 0.35rem 0.6rem; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+.doc hr { border: 0; border-top: 1px solid var(--line); margin: 1.5rem 0; }

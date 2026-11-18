@@ -63,7 +63,8 @@ internal/model      domain types and rules — no I/O, no SQL, no printing
 internal/prep       SM-2 scheduler: pure function of (item, grade, now)
 internal/store      SQLite persistence, migrations, queries
 internal/cli        dispatch, flag parsing, terminal rendering
-internal/web        `career serve`: HTML pages over the same store and model
+internal/web        `career serve`: HTML pages over the same store and model,
+                    plus registered Markdown docs read from disk (goldmark)
 contrib/systemd     user unit for `career serve`; `@BIN@` is filled in at install
 ```
 
@@ -126,6 +127,15 @@ think about both before adding any endpoint that writes. A grade is applied only
 while the card is due, so a resubmitted form cannot review it twice.
 Unsanitized story text is deliberately never served; the CLI is the only place
 to read it.
+
+**Docs are read from disk on every view and never copied.** `docs` stores a
+name and an absolute path, nothing else; `career doc add` resolves the path
+because the server's working directory is not the user's. That is what lets a
+doc point at private notes without their text entering the database, a
+fixture, or this repository. Render with goldmark's defaults: raw HTML is
+dropped and `javascript:` links are neutralised. Never add `html.WithUnsafe`.
+A doc has no sanitized gate, unlike a story; registering a file is the user's
+explicit opt-in to reading it on the phone, which is why `doc add` says so.
 
 **The systemd unit stays unsandboxed apart from `NoNewPrivileges`.** In a user
 service, `ProtectSystem`, `PrivateTmp` and the like need unprivileged user

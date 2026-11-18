@@ -1,0 +1,15 @@
+{{define "content" -}}
+<header>
+<h1>Docs</h1>
+</header>
+
+{{with .Docs}}
+<ul class="rows">
+{{range .}}<li><a href="/docs/{{.ID}}">
+<strong>{{.Name}}</strong>
+</a></li>
+{{end}}</ul>
+{{else}}
+<p class="clear">No docs yet. Register a Markdown file with <code>career doc add "&lt;name&gt;" &lt;path&gt;</code>.</p>
+{{end}}
+{{- end}}

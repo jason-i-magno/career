@@ -37,6 +37,7 @@ var commands = []command{
 	{"today", "what needs doing right now", runToday},
 	{"app", "track applications through the pipeline", runApp},
 	{"story", "build and audit your STAR story bank", runStory},
+	{"doc", "Markdown files to read on the dashboard", runDoc},
 	{"prep", "spaced-repetition interview prep", runPrep},
 	{"stats", "funnel and conversion rates by source and track", runStats},
 	{"seed", "load the starter prep deck and story prompts", runSeed},
